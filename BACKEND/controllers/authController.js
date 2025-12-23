@@ -49,7 +49,7 @@ async function register(req, res) {
     // New user creation
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
+    console.log(hashedPassword);
     const { otp, hashedOTP } = generateOTP();
 
     const user = await User.create({
@@ -107,13 +107,13 @@ async function verifyEmail(req, res) {
   await user.save();
   //   res.json({ message: "Email verified successfully" });
   //giving token after verifying email auto login if not given then need to login again
-  const token = generateToken(user._id, user.name, user.email);
+  const token = generateToken(user._id, user.name, user.email, user.role);
 
   res.json({
     message: "User registered successfully",
     success: true,
     token,
-    user: { id: user._id, name: user.name, email: user.email },
+    user: { id: user._id, name: user.name, email: user.email, role: user.role },
   });
 }
 async function login(req, res) {
@@ -143,7 +143,12 @@ async function login(req, res) {
         .status(403)
         .json({ message: "Email not verified", success: false });
     }
-    const token = generateToken(user._id, user.name, user.email);
+    const token = generateToken(user._id, user.name, user.email, user.role);
+    console.log(user);
+    console.log("object");
+
+    console.log(token);
+    console.log("object");
     res.json({
       message: "User logged successfully",
       success: true,
@@ -152,6 +157,7 @@ async function login(req, res) {
         name: user.name,
         email: user.email,
         token,
+        role: user.role,
       },
     });
   } catch (error) {
