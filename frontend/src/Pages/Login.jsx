@@ -1,12 +1,13 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import { useDispatch } from "react-redux";
+import { addUser } from "../redux/slice/userSlice";
 export default function LoginCard() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const handleSubmit = async () => {
     if (!email || !password) {
       alert("Please fill in both fields");
@@ -18,16 +19,17 @@ export default function LoginCard() {
         email,
         password,
       });
-
+      console.log(res.data);
       if (res.data.success) {
-        localStorage.setItem("token", res.data.user.token);
-        localStorage.setItem("email", res.data.user.email);
+        // localStorage.setItem("token", res.data.user.token);
+        // localStorage.setItem("email", res.data.user.email);
+        dispatch(addUser(res.data.user));
         navigate("/home");
       } else {
         alert(res.data.message);
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      alert(err.response?.data?.message);
     }
   };
 

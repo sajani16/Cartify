@@ -1,10 +1,13 @@
 import { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addUser } from "../redux/slice/userSlice";
 
 export default function Otp() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputsRef = useRef([]);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const handleChange = (index, value) => {
     const newOtp = [...otp];
@@ -41,10 +44,12 @@ export default function Otp() {
       email,
       otp: code,
     });
+
     console.log(res);
 
     if (res.data.success) {
       navigate("/home");
+      dispatch(addUser(res.data.user));
     }
   };
 

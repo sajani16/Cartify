@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useDispatch } from "react-redux";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export default function Register() {
     email: "",
     password: "",
   });
-
+  const dispatch = useDispatch();
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -21,6 +22,7 @@ export default function Register() {
 
       if (res.data.email) {
         localStorage.setItem("email", JSON.stringify(res.data.email));
+
         navigate("/otp");
       }
     } catch (error) {
