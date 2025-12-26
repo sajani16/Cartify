@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "../../redux/slice/productSlice";
 import { Link } from "react-router-dom";
 
-function Products() {
+export default function Products() {
   const dispatch = useDispatch();
 
   const { isLoading, data, error, currentPage, totalPages } = useSelector(
@@ -12,7 +12,7 @@ function Products() {
 
   // Load FIRST page
   useEffect(() => {
-    dispatch(fetchProducts({ page: 1, limit: 4 }));
+    dispatch(fetchProducts({ page: 1, limit: 10 }));
   }, [dispatch]);
 
   const loadMoreHandler = () => {
@@ -91,5 +91,3 @@ function Products() {
     </div>
   );
 }
-
-export default Products;
