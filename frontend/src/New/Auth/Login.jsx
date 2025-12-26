@@ -2,8 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { addUser } from "../redux/slice/userSlice";
-export default function LoginCard() {
+import { loginSuccess } from "../../redux/slice/userSlice";
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -23,8 +23,8 @@ export default function LoginCard() {
       if (res.data.success) {
         // localStorage.setItem("token", res.data.user.token);
         // localStorage.setItem("email", res.data.user.email);
-        dispatch(addUser(res.data.user));
-        navigate("/home");
+        dispatch(loginSuccess(res.data.user));
+        navigate("/");
       } else {
         alert(res.data.message);
       }
