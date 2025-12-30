@@ -21,7 +21,7 @@ export default function Login() {
       });
       console.log(res.data);
       if (res.data.success) {
-        // localStorage.setItem("token", res.data.user.token);
+        localStorage.setItem("token", res.data.token);
         // localStorage.setItem("email", res.data.user.email);
         dispatch(loginSuccess(res.data.user));
         navigate("/");

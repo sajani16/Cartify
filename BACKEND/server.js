@@ -3,6 +3,7 @@ const dbConnect = require("./config/db");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 const dotenv = require("dotenv");
 const cloudinaryConfig = require("./config/cloudinary");
 
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/product", productRoutes);
+app.use("/order", orderRoutes);
 app.get("/", admin, (req, res) => {
   res.send("Backend running");
 });

@@ -32,6 +32,7 @@ export default function AdminProducts() {
       dispatch(fetchProducts({ page: currentPage, limit })); // refresh current page
     } catch (err) {
       alert("Failed to delete product");
+      console.log(err);
     }
   };
 

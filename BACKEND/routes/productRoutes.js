@@ -11,19 +11,19 @@ const {
   searchProduct,
 } = require("../controllers/productController");
 
-const route = express.Router();
+const router = express.Router();
 
-route.post("/addProduct", protect, admin, upload.single("image"), addProduct);
-route.get("/getProducts", getProducts);
-route.get("/getProduct/:id", getProduct);
-route.get("/search", searchProduct);
-route.put(
+router.post("/addProduct", protect, admin, upload.single("image"), addProduct);
+router.get("/getProducts", getProducts);
+router.get("/getProduct/:id", getProduct);
+router.get("/search", searchProduct);
+router.put(
   "/updateProduct/:id",
   protect,
   admin,
   upload.single("image"),
   updateProduct
 );
-route.delete("/deleteProduct/:id", protect, admin, deleteProduct);
+router.delete("/deleteProduct/:id", protect, admin, deleteProduct);
 
-module.exports = route;
+module.exports = router;
