@@ -6,6 +6,7 @@ const initialState = JSON.parse(localStorage.getItem("user")) || {
   email: null,
   _id: null,
   role: null,
+  image: null, // add image
 };
 
 const userSlice = createSlice({
@@ -18,7 +19,8 @@ const userSlice = createSlice({
       state.token = action.payload.token;
       state._id = action.payload._id;
       state.role = action.payload.role;
-      localStorage.setItem("user", JSON.stringify(action.payload));
+      state.image = action.payload.image || null; // store image
+      localStorage.setItem("user", JSON.stringify({ ...state }));
     },
     logout(state) {
       state.name = null;
@@ -26,6 +28,7 @@ const userSlice = createSlice({
       state.token = null;
       state._id = null;
       state.role = null;
+      state.image = null; // reset image
       localStorage.removeItem("user");
     },
   },

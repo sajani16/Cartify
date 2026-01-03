@@ -9,18 +9,16 @@ import {
   Plus,
   FileText,
 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 export default function Sidebar() {
-  const dispatch = useDispatch();
   const { name } = useSelector((state) => state.user);
 
-  // Main menu items
   const menu = [
     { name: "Dashboard", path: "/", icon: LayoutDashboard },
     {
       name: "Products",
-      path: "/adminproducts", // main path for top-level active state
+      path: "/adminproducts",
       icon: Package,
       subItems: [
         { name: "Add Product", path: "/addproduct", icon: Plus },
@@ -38,17 +36,15 @@ export default function Sidebar() {
         {name}
       </div>
 
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {menu.map(({ name, path, icon: Icon, subItems }) => {
           const hasSub = Array.isArray(subItems);
           return (
             <div key={name}>
-              {/* Main item */}
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-2 rounded-lg transition 
-                  ${
+                  `flex items-center gap-3 px-4 py-2 rounded-lg transition ${
                     isActive
                       ? "bg-blue-600 text-white"
                       : "text-gray-300 hover:bg-slate-800"
@@ -59,7 +55,6 @@ export default function Sidebar() {
                 {name}
               </NavLink>
 
-              {/* Sub-items */}
               {hasSub && (
                 <div className="pl-8 mt-1 flex flex-col space-y-1">
                   {subItems.map(
@@ -68,12 +63,11 @@ export default function Sidebar() {
                         key={subName}
                         to={subPath}
                         className={({ isActive }) =>
-                          `flex items-center gap-2 px-4 py-1 rounded-lg text-sm transition 
-                        ${
-                          isActive
-                            ? "bg-blue-500 text-white"
-                            : "text-gray-400 hover:bg-slate-800"
-                        }`
+                          `flex items-center gap-2 px-4 py-1 rounded-lg text-sm transition ${
+                            isActive
+                              ? "bg-blue-500 text-white"
+                              : "text-gray-400 hover:bg-slate-800"
+                          }`
                         }
                       >
                         <SubIcon size={16} />

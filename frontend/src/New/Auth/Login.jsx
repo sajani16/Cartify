@@ -3,33 +3,41 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/slice/userSlice";
+import { toast } from "react-toastify";
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const handleSubmit = async () => {
     if (!email || !password) {
-      alert("Please fill in both fields");
+      toast.error("Please fill in both fields");
       return;
     }
+
+    setLoading(true);
 
     try {
       const res = await axios.post("http://localhost:3000/auth/login", {
         email,
         password,
       });
-      console.log(res.data);
+
       if (res.data.success) {
         localStorage.setItem("token", res.data.token);
-        // localStorage.setItem("email", res.data.user.email);
         dispatch(loginSuccess(res.data.user));
+        toast.success("Login successful");
         navigate("/");
       } else {
-        alert(res.data.message);
+        toast.error(res.data.message);
       }
     } catch (err) {
-      alert(err.response?.data?.message);
+      toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,11 +47,9 @@ export default function Login() {
         {/* Left panel */}
         <div className="w-1/2 bg-yellow-500 text-[#0B1F3A] flex flex-col justify-center items-center p-8">
           <h2 className="text-2xl font-semibold mb-2">Welcome Back!</h2>
-          <p className="mb-6">Already have an account?</p>
+          <p className="mb-6">Don't have an account?</p>
           <button
-            onClick={() => {
-              navigate("/register");
-            }}
+            onClick={() => navigate("/register")}
             className="border-2 border-[#0B1F3A] text-[#0B1F3A] px-6 py-2 rounded hover:bg-[#0B1F3A] hover:text-yellow-500 transition"
           >
             Register
@@ -71,9 +77,12 @@ export default function Login() {
           </div>
           <button
             onClick={handleSubmit}
-            className="w-full bg-yellow-500 text-xl py-2 rounded hover:bg-[#0A1A32] transition"
+            disabled={loading}
+            className={`w-full bg-yellow-500 text-xl py-2 rounded transition ${
+              loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#0A1A32]"
+            }`}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </div>
       </div>

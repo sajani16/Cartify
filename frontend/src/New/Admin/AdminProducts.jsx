@@ -1,18 +1,20 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "../../redux/slice/productSlice";
 import { Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function AdminProducts() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { data, totalPages } = useSelector((state) => state.product); // assuming slice has totalPages
+  const { data, totalPages } = useSelector((state) => state.product);
   const { token } = useSelector((state) => state.user);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const limit = 5; // number of products per page
+  const [loadingDelete, setLoadingDelete] = useState(null); // track delete request
+  const limit = 5;
 
   useEffect(() => {
     dispatch(fetchProducts({ page: currentPage, limit }));
@@ -23,16 +25,21 @@ export default function AdminProducts() {
     if (!window.confirm("Are you sure you want to delete this product?"))
       return;
 
+    setLoadingDelete(id);
     try {
-      await axios.delete(`http://localhost:3000/product/deleteProduct/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      dispatch(fetchProducts({ page: currentPage, limit })); // refresh current page
+      const res = await axios.delete(
+        `http://localhost:3000/product/deleteProduct/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success(res.data.message || "Product deleted successfully");
+      dispatch(fetchProducts({ page: currentPage, limit }));
     } catch (err) {
-      alert("Failed to delete product");
-      console.log(err);
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to delete product");
+    } finally {
+      setLoadingDelete(null);
     }
   };
 
@@ -47,7 +54,7 @@ export default function AdminProducts() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Products</h1>
         <button
-          onClick={() => navigate("/addproduct")}
+          onClick={() => navigate("/admin/addproduct")}
           className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
         >
           + Add Product
@@ -73,7 +80,7 @@ export default function AdminProducts() {
               <tr
                 key={product._id}
                 className="border-t hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/productdetails/${product._id}`)}
+                onClick={() => navigate(`/products/${product._id}`)}
               >
                 <td className="p-3 flex items-center gap-3">
                   <img
@@ -83,11 +90,9 @@ export default function AdminProducts() {
                   />
                   <span className="font-medium">{product.name}</span>
                 </td>
-
                 <td>${product.price}</td>
                 <td>{product.stock}</td>
                 <td>{product.category}</td>
-
                 <td>
                   <span
                     className={`px-2 py-1 rounded text-sm ${
@@ -99,14 +104,15 @@ export default function AdminProducts() {
                     {product.stock > 0 ? "Active" : "Out of Stock"}
                   </span>
                 </td>
-
                 <td
                   className="text-right space-x-2"
-                  onClick={(e) => e.stopPropagation()} // Prevent row click for actions
+                  onClick={(e) => e.stopPropagation()}
                 >
                   {/* EDIT */}
                   <button
-                    onClick={() => navigate(`/editproduct/${product._id}`)}
+                    onClick={() =>
+                      navigate(`/admin/editproduct/${product._id}`)
+                    }
                     className="p-2 text-blue-600 hover:bg-blue-50 rounded"
                   >
                     <Pencil size={18} />
@@ -115,7 +121,12 @@ export default function AdminProducts() {
                   {/* DELETE */}
                   <button
                     onClick={() => handleDelete(product._id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded"
+                    disabled={loadingDelete === product._id}
+                    className={`p-2 text-red-600 hover:bg-red-50 rounded ${
+                      loadingDelete === product._id
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
                   >
                     <Trash2 size={18} />
                   </button>

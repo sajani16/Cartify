@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 function AddProduct() {
   const { token, role } = useSelector((state) => state.user);
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState({
     name: "",
@@ -13,10 +15,10 @@ function AddProduct() {
     category: "",
     image: null,
   });
-  const navigate = useNavigate();
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // new loading state
 
+  const [loading, setLoading] = useState(false);
+
+  // Admin check
   if (role !== "admin") {
     return (
       <div className="bg-[#0B1F3A] min-h-screen flex justify-center items-center p-6">
@@ -27,10 +29,17 @@ function AddProduct() {
     );
   }
 
+  // Input change
   const handleChange = (e) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
   };
 
+  // File change
+  const handleFileChange = (e) => {
+    setProduct((prev) => ({ ...prev, image: e.target.files[0] }));
+  };
+
+  // Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -41,21 +50,36 @@ function AddProduct() {
       !product.category ||
       !product.image
     ) {
-      setError("All fields are required");
+      toast.error("All fields are required");
       return;
     }
-    setError("");
-    setLoading(true); // disable button
+
+    setLoading(true);
 
     try {
-      const formData = new FormData();
-      for (let key in product) {
-        formData.append(key, product[key]);
-      }
+      // 1️⃣ Send JSON data first
+      const productData = {
+        name: product.name,
+        price: product.price,
+        stock: product.stock,
+        category: product.category,
+      };
 
-      const res = await axios.post(
-        "http://localhost:3000/product/addProduct",
-        formData,
+      const productRes = await axios.post(
+        "http://localhost:3000/product/addProductData",
+        productData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const productId = productRes.data.product._id;
+
+      // 2️⃣ Send image separately
+      const fileData = new FormData();
+      fileData.append("image", product.image);
+
+      await axios.post(
+        `http://localhost:3000/product/addProductImage/${productId}`,
+        fileData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -64,22 +88,14 @@ function AddProduct() {
         }
       );
 
-      if (res.data.success) {
-        alert(res.data.message);
-        setProduct({
-          name: "",
-          price: "",
-          stock: "",
-          category: "",
-          image: null,
-        });
-        navigate("/adminproducts");
-      }
+      toast.success("Product added successfully");
+      setProduct({ name: "", price: "", stock: "", category: "", image: null });
+      navigate("/admin/adminproducts");
     } catch (err) {
-      console.log(err);
-      setError(err.response?.data?.message || err.message);
+      console.error(err);
+      toast.error(err.response?.data?.message || err.message);
     } finally {
-      setLoading(false); // enable button again
+      setLoading(false);
     }
   };
 
@@ -89,8 +105,6 @@ function AddProduct() {
         <h2 className="text-2xl font-bold text-[#0B1F3A] mb-6 text-center">
           Add New Product
         </h2>
-
-        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
@@ -145,14 +159,12 @@ function AddProduct() {
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={(e) =>
-              setProduct((prev) => ({ ...prev, image: e.target.files[0] }))
-            }
+            onChange={handleFileChange}
           />
 
           <button
             type="submit"
-            disabled={loading} // disable while loading
+            disabled={loading}
             className={`mt-4 bg-yellow-500 text-[#0B1F3A] font-semibold py-2 rounded transition-colors duration-200 ${
               loading ? "opacity-50 cursor-not-allowed" : "hover:bg-yellow-400"
             }`}

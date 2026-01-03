@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -10,10 +10,17 @@ export default function Register() {
     email: "",
     password: "",
   });
-  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
+    if (!userData.name || !userData.email || !userData.password) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await axios.post(
         "http://localhost:3000/auth/register",
@@ -22,11 +29,15 @@ export default function Register() {
 
       if (res.data.email) {
         localStorage.setItem("email", JSON.stringify(res.data.email));
-
+        toast.success("Registered successfully! Enter OTP.");
         navigate("/otp");
+      } else {
+        toast.error(res.data.message || "Registration failed");
       }
     } catch (error) {
-      alert(error.response?.data?.message || "Registration failed");
+      toast.error(error.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,11 +87,17 @@ export default function Register() {
               }
               className="w-full h-12 border border-gray-300 rounded px-3 focus:outline-yellow-500"
             />
+
             <button
               type="submit"
-              className="w-full bg-[#0B1F3A] text-yellow-500 py-2 rounded hover:bg-yellow-500 hover:text-[#0B1F3A] transition"
+              disabled={loading}
+              className={`w-full py-2 rounded transition font-semibold ${
+                loading
+                  ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  : "bg-[#0B1F3A] text-yellow-500 hover:bg-yellow-500 hover:text-[#0B1F3A]"
+              }`}
             >
-              Register
+              {loading ? "Registering..." : "Register"}
             </button>
           </form>
         </div>

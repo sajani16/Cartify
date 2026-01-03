@@ -1,4 +1,9 @@
-export default function Hero({ navigate }) {
+import React from "react";
+import { useNavigate } from "react-router-dom";
+
+export default function Hero() {
+  const navigate = useNavigate();
+
   return (
     <section className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-16 items-center">
       <div>
@@ -7,25 +12,29 @@ export default function Hero({ navigate }) {
         </p>
 
         <h1 className="mt-4 text-5xl font-serif text-gray-900 leading-tight">
-          Modern office<br />design made<br />simple
+          Modern office
+          <br />
+          design made
+          <br />
+          simple
         </h1>
 
         <p className="mt-6 text-gray-600 max-w-md">
-          Thoughtfully designed furniture that balances
-          aesthetics and comfort.
+          Thoughtfully designed furniture that balances aesthetics and comfort.
         </p>
 
         <button
           onClick={() => navigate("/products")}
-          className="mt-10 px-7 py-3 bg-gray-900 text-white rounded-sm"
+          className="mt-10 px-7 py-3 bg-gray-900 text-white rounded-sm hover:bg-gray-800 transition"
         >
           Shop Now
         </button>
       </div>
 
-      <div className="h-130 bg-[#D7E9EE] flex items-center justify-center">
+      <div className="h-80 md:h-130 bg-[#D7E9EE] flex items-center justify-center rounded">
         <span className="text-gray-400">Hero Image</span>
       </div>
     </section>
   );
 }
+

@@ -3,21 +3,20 @@ import Sidebar from "./Sidebar";
 import { useSelector } from "react-redux";
 
 export default function AdminLayout() {
-  const {role} = useSelector((state) => state.user);
-  // or useSelector((state) => state.user)
+  const { role } = useSelector((state) => state.user);
 
-  // ❌ No user or not admin → kick them out
+  // ❌ Kick out if not admin
   if (role !== "admin") {
     return <Navigate to="/user" replace />;
   }
 
-  // ✅ Admin only
+  // ✅ Admin layout
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
 
       <main className="flex-1 overflow-y-auto p-6">
-        <Outlet />
+        <Outlet /> {/* Nested admin pages will render here */}
       </main>
     </div>
   );

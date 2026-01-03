@@ -13,12 +13,28 @@ async function getUsers(req, res) {
       });
     }
 
-    const users = await User.find({}).select("-password");
+    // pagination params
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 5, 1);
+    const skip = (page - 1) * limit;
+
+    // total users count
+    const totalUsers = await User.countDocuments();
+
+    // paginated users
+    const users = await User.find({})
+      .select("-password")
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
       message: "Users fetched successfully",
       users,
+      totalUsers,
+      totalPages: Math.ceil(totalUsers / limit),
+      currentPage: page,
     });
   } catch (error) {
     console.error(error);
@@ -66,43 +82,44 @@ async function getUser(req, res) {
 async function updateUser(req, res) {
   try {
     const userId = req.params.id;
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
+    // Authorization check
     if (req.user.role !== "admin" && req.user.id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized",
-      });
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
     }
 
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
+    // Update fields based on role
     if (name) user.name = name;
-    if (email) user.email = email;
+    if (email && (req.user.id === userId || req.user.role === "admin"))
+      user.email = email;
 
-    if (password && password.trim() !== "") {
+    // Admin can update role
+    if (role && req.user.role === "admin") user.role = role;
+
+    // Update password if provided (self only)
+    if (password && password.trim() !== "" && req.user.id === userId) {
       user.password = await bcrypt.hash(password, 10);
     }
 
+    // Image upload
     if (req.file) {
       const { secure_url, public_id } = await uploadImage(req.file.path);
 
-      if (user.imageId) {
-        await cloudinary.uploader.destroy(user.imageId);
-      }
+      if (user.imageId) await cloudinary.uploader.destroy(user.imageId);
 
       user.image = secure_url;
       user.imageId = public_id;
 
-      if (fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
-      }
+      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
     }
 
     await user.save();
@@ -120,10 +137,7 @@ async function updateUser(req, res) {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 }
 

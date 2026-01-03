@@ -1,123 +1,204 @@
 const Order = require("../models/order");
+const Cart = require("../models/cart");
+const Product = require("../models/product");
 
-// CREATE ORDER
-const createOrder = async (req, res) => {
+// Create a new order
+async function createOrder(req, res) {
   try {
-    const { products, totalAmount } = req.body;
+    const userId = req.user.id;
 
-    if (!products || products.length === 0) {
-      return res.status(400).json({ message: "No products provided" });
+    // Fetch user's cart with product details
+    const cart = await Cart.findOne({ user: userId }).populate(
+      "products.product",
+      "name price stock image"
+    );
+
+    if (!cart || cart.products.length === 0) {
+      return res.status(400).json({ success: false, message: "Cart is empty" });
     }
 
+    // Check stock for each product
+    for (const item of cart.products) {
+      if (item.quantity > item.product.stock) {
+        return res.status(400).json({
+          success: false,
+          message: `Not enough stock for ${item.product.name}`,
+        });
+      }
+    }
+
+    // Create order using correct 'products' field
     const order = await Order.create({
-      user: req.user.id,
-      products,
-      totalAmount,
-      status: "pending",
+      user: userId,
+      products: cart.products.map((item) => ({
+        product: item.product._id,
+        quantity: item.quantity,
+      })),
+      totalAmount: cart.products.reduce(
+        (acc, item) => acc + item.quantity * item.product.price,
+        0
+      ),
+      status: "Pending",
     });
 
-    res.status(201).json(order);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+    // Reduce stock
+    for (const item of cart.products) {
+      item.product.stock -= item.quantity;
+      await item.product.save();
+    }
 
-// GET MY ORDERS
-const getMyOrders = async (req, res) => {
+    // Clear cart
+    cart.products = [];
+    await cart.save();
+
+    // Populate products before sending response
+    await order.populate("products.product", "name price image");
+
+    res
+      .status(201)
+      .json({ success: true, message: "Order created successfully", order });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create order",
+      error: error.message,
+    });
+  }
+}
+
+// Get orders for logged-in user
+async function getMyOrders(req, res) {
   try {
-    const orders = await Order.find({ user: req.user.id })
-      .populate("products.product", "name price")
-      .sort({ createdAt: -1 });
+    const orders = await Order.find({ user: req.user.id }).populate(
+      "products.product",
+      "name price image"
+    );
 
-    res.json(orders);
+    res.json({ success: true, message: "Your orders...", orders });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
+      error: error.message,
+    });
   }
-};
+}
 
-// GET ALL ORDERS (ADMIN)
-const getAllOrders = async (req, res) => {
+// Get all orders (admin)
+async function getAllOrders(req, res) {
   try {
     const orders = await Order.find()
       .populate("user", "name email")
-      .populate("products.product", "name price")
-      .sort({ createdAt: -1 });
+      .populate("products.product", "name price image");
 
-    res.json(orders);
+    res.json({ success: true, message: "All orders", orders });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
+      error: error.message,
+    });
   }
-};
+}
 
-// UPDATE ORDER STATUS (ADMIN)
-const updateOrderStatus = async (req, res) => {
+// Update order status
+// Update order status
+async function updateOrderStatus(req, res) {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
 
-    const allowedStatus = [
-      "pending",
-      "paid",
-      "shipped",
-      "delivered",
-      "cancelled",
+    if (!status) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Status is required" });
+    }
+
+    const allowedStatuses = [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
     ];
-
-    if (!allowedStatus.includes(status)) {
-      return res.status(400).json({ message: "Invalid status" });
+    if (!allowedStatuses.includes(status)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid status" });
     }
-
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { status },
-      { new: true }
-    );
-
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    res.json(order);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// CANCEL ORDER (USER)
-const cancelOrder = async (req, res) => {
-  try {
-    const { orderId } = req.params;
 
     const order = await Order.findById(orderId);
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    // user owns order?
-    if (order.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not your order" });
-    }
-
-    // cannot cancel after shipped
-    if (["shipped", "delivered"].includes(order.status)) {
       return res
-        .status(400)
-        .json({ message: "Order already shipped" });
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
 
-    order.status = "cancelled";
+    order.status = status;
     await order.save();
 
-    res.json(order);
+    // Populate product info before returning
+    await order.populate("products.product", "name price image");
+
+    res.json({ success: true, message: "Order status updated", order });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Update order failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update order",
+      error: error.message,
+    });
   }
-};
+}
+
+// Cancel order (user)
+async function cancelOrder(req, res) {
+  try {
+    const { orderId } = req.params;
+    const userId = req.user.id;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    if (order.user.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
+    if (!["Pending", "Processing"].includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot cancel order after it has been shipped or delivered",
+      });
+    }
+
+    order.status = "Cancelled";
+    await order.save();
+
+    // Populate products before sending response
+    await order.populate("products.product", "name price image");
+
+    res.json({ success: true, message: "Order cancelled successfully", order });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to cancel order",
+      error: error.message,
+    });
+  }
+}
 
 module.exports = {
   createOrder,
-  getMyOrders,
   getAllOrders,
-  updateOrderStatus,
+  getMyOrders,
   cancelOrder,
+  updateOrderStatus,
 };

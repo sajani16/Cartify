@@ -157,6 +157,7 @@ async function login(req, res) {
         name: user.name,
         email: user.email,
         token,
+        
         role: user.role,
       },
     });

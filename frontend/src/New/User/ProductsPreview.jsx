@@ -2,23 +2,25 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "../../redux/slice/productSlice";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function ProductsPreview() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { data, isLoading, error } = useSelector((state) => state.product);
+  const { data = [], isLoading, error } = useSelector((state) => state.product);
 
   useEffect(() => {
-    // Load only few products for preview
-    dispatch(fetchProducts({ page: 1, limit: 4 }));
+    // Load only 4 products for preview
+    dispatch(fetchProducts({ page: 1, limit: 4 }))
+      .unwrap()
+      .catch((err) => toast.error(err.message || "Failed to load products"));
   }, [dispatch]);
 
   return (
     <section className="bg-[#EAF3F6] py-28">
       <div className="max-w-7xl mx-auto px-6 text-center">
         <h2 className="text-3xl font-serif text-gray-900">Popular Products</h2>
-
         <p className="mt-4 text-gray-600">
           A curated selection from our collection
         </p>
@@ -56,7 +58,7 @@ export default function ProductsPreview() {
         {/* CTA */}
         <button
           onClick={() => navigate("/products")}
-          className="mt-20 px-8 py-3 bg-gray-900 text-white hover:bg-black transition"
+          className="mt-20 px-8 py-3 bg-gray-900 text-white hover:bg-black transition rounded"
         >
           View All Products
         </button>
