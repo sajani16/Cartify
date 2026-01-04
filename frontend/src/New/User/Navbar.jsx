@@ -1,96 +1,62 @@
-import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { ShoppingCart, User, Menu, X } from "lucide-react";
+import { ShoppingCart, User } from "lucide-react";
 import { useSelector } from "react-redux";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const { items } = useSelector((state) => state.cart); // cart items
-  const toggleMenu = () => setIsOpen(!isOpen);
-
-  const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Products", path: "/products" },
-    { name: "Orders", path: "/myorders" },
-  ];
+  const { items } = useSelector((state) => state.cart);
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+    <nav className="bg-white shadow sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-blue-600">
+          <Link to="/" className="text-2xl font-bold text-[#0B1F3A]">
             MyShop
           </Link>
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex space-x-6">
-            {navLinks.map(({ name, path }) => (
-              <NavLink
-                key={name}
-                to={path}
-                className={({ isActive }) =>
-                  isActive
-                    ? "text-blue-600 font-semibold"
-                    : "text-gray-700 hover:text-blue-500"
-                }
-              >
-                {name}
-              </NavLink>
-            ))}
+          {/* Desktop Nav */}
+          <div className="hidden md:flex space-x-8">
+            <NavLink to="/" className={navClass}>
+              Home
+            </NavLink>
+            <NavLink to="/products" className={navClass}>
+              Products
+            </NavLink>
+            <NavLink to="/categories" className={navClass}>
+              Categories
+            </NavLink>
+            <NavLink to="/deals" className={navClass}>
+              Deals
+            </NavLink>
           </div>
 
           {/* Right Icons */}
-          <div className="flex items-center space-x-4">
-            <Link to="/cart" className="relative">
-              <ShoppingCart
-                size={24}
-                className="text-gray-700 hover:text-blue-500"
-              />
+          <div className="flex items-center space-x-6">
+            {/* Cart */}
+            <Link to="/account/cart" className="relative">
+              <ShoppingCart className="w-6 h-6 text-gray-700 hover:text-[#0B1F3A]" />
               {items?.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                   {items.length}
                 </span>
               )}
             </Link>
-            <Link to="/myprofile">
-              <User size={24} className="text-gray-700 hover:text-blue-500" />
-            </Link>
 
-            {/* Mobile Hamburger */}
-            <button
-              onClick={toggleMenu}
-              className="md:hidden p-2 rounded hover:bg-gray-100"
+            {/* Account Icon */}
+            <Link
+              to="/account"
+              className="p-1 rounded-full hover:bg-gray-100 transition"
             >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+              <User className="w-6 h-6 text-[#0B1F3A]" />
+            </Link>
           </div>
         </div>
       </div>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
-          <div className="px-2 pt-2 pb-4 space-y-1">
-            {navLinks.map(({ name, path }) => (
-              <NavLink
-                key={name}
-                to={path}
-                onClick={() => setIsOpen(false)}
-                className={({ isActive }) =>
-                  `block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive
-                      ? "text-blue-600"
-                      : "text-gray-700 hover:text-blue-500"
-                  }`
-                }
-              >
-                {name}
-              </NavLink>
-            ))}
-          </div>
-        </div>
-      )}
     </nav>
   );
 }
+
+const navClass = ({ isActive }) =>
+  isActive
+    ? "text-[#0B1F3A] font-semibold"
+    : "text-gray-700 hover:text-[#0B1F3A] transition";

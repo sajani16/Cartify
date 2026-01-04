@@ -12,7 +12,9 @@ export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // ✅ prevent default form submit
+
     if (!email || !password) {
       toast.error("Please fill in both fields");
       return;
@@ -25,12 +27,13 @@ export default function Login() {
         email,
         password,
       });
+      console.log("Login response:", res.data);
 
       if (res.data.success) {
         localStorage.setItem("token", res.data.token);
         dispatch(loginSuccess(res.data.user));
         toast.success("Login successful");
-        navigate("/");
+        navigate("/"); // ✅ navigate to home
       } else {
         toast.error(res.data.message);
       }
@@ -59,7 +62,9 @@ export default function Login() {
         {/* Right panel */}
         <div className="w-1/2 bg-white flex flex-col justify-center p-8">
           <h2 className="text-xl font-semibold mb-6">Login</h2>
-          <div className="flex flex-col gap-4 mb-6">
+
+          {/* ✅ Use form to handle Enter key */}
+          <form className="flex flex-col gap-4 mb-6" onSubmit={handleSubmit}>
             <input
               type="email"
               placeholder="Email"
@@ -74,16 +79,17 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full h-12 border border-gray-300 rounded px-3 focus:outline-yellow-500"
             />
-          </div>
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className={`w-full bg-yellow-500 text-xl py-2 rounded transition ${
-              loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#0A1A32]"
-            }`}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full bg-yellow-500 text-xl py-2 rounded transition ${
+                loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#0A1A32]"
+              }`}
+            >
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </form>
         </div>
       </div>
     </div>

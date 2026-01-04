@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
@@ -8,26 +8,31 @@ import {
   Pencil,
   Plus,
   FileText,
+  LogOut,
 } from "lucide-react";
-import { useSelector } from "react-redux";
+import { logout } from "../../redux/slice/userSlice";
+
+import { useDispatch, useSelector } from "react-redux";
 
 export default function Sidebar() {
   const { name } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const menu = [
-    { name: "Dashboard", path: "/", icon: LayoutDashboard },
+    { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
     {
       name: "Products",
-      path: "/adminproducts",
+      path: "/admin/products",
       icon: Package,
       subItems: [
-        { name: "Add Product", path: "/addproduct", icon: Plus },
-        { name: "All Products", path: "/adminproducts", icon: FileText },
+        { name: "Add Product", path: "/admin/addproduct", icon: Plus },
+        { name: "All Products", path: "/admin/products", icon: FileText },
       ],
     },
-    { name: "Orders", path: "/orders", icon: ShoppingCart },
-    { name: "Customers", path: "/customers", icon: Users },
-    { name: "Settings", path: "/settings", icon: Settings },
+    { name: "Orders", path: "/admin/orders", icon: ShoppingCart },
+    { name: "Customers", path: "/admin/customers", icon: Users },
+    { name: "Settings", path: "/admin/settings", icon: Settings },
   ];
 
   return (
@@ -80,6 +85,15 @@ export default function Sidebar() {
             </div>
           );
         })}
+        <button
+          onClick={() => {
+            dispatch(logout());
+            navigate("/login");
+          }}
+          className="flex items-center gap-4 p-3 mt-6 rounded hover:bg-red-100 text-red-600 font-medium transition w-full text-left"
+        >
+          <LogOut className="w-5 h-5" /> Logout
+        </button>
       </nav>
     </aside>
   );
