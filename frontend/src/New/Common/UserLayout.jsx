@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 export default function UserLayout() {
   return (
@@ -8,6 +9,7 @@ export default function UserLayout() {
       <main className="min-h-screen bg-gray-100 p-4">
         <Outlet />
       </main>
+      <Footer />
     </>
   );
 }

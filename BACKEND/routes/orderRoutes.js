@@ -10,13 +10,13 @@ const {
   cancelOrder,
 } = require("../controllers/orderController");
 
-// User routes
+// User
 router.post("/createorder", protect, createOrder);
 router.get("/myorders", protect, getMyOrders);
+router.delete("/cancelorder/:orderId", protect, cancelOrder);
 
-// Admin routes
+// Admin
 router.get("/allorders", protect, admin, getAllOrders);
 router.put("/updateorder/:orderId", protect, admin, updateOrderStatus);
-router.delete("/cancelorder/:orderId", protect, cancelOrder);
 
 module.exports = router;

@@ -6,6 +6,7 @@ const productRoutes = require("./routes/productRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const userRoutes = require("./routes/userRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 const dotenv = require("dotenv");
 const cloudinaryConfig = require("./config/cloudinary");
 
@@ -23,6 +24,7 @@ app.use("/user", userRoutes);
 app.use("/product", productRoutes);
 app.use("/order", orderRoutes);
 app.use("/cart", cartRoutes);
+app.use("/reviews", reviewRoutes);
 app.get("/", admin, (req, res) => {
   res.send("Backend running");
 });

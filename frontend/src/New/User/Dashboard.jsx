@@ -12,16 +12,13 @@ import {
 
 export default function AccountDashboard() {
   const dispatch = useDispatch();
-
   const { myOrders, loading, error } = useSelector((state) => state.order);
   const user = useSelector((state) => state.user.user);
 
-  // Fetch orders on mount
   useEffect(() => {
     dispatch(fetchMyOrders());
   }, [dispatch]);
 
-  // Compute stats dynamically
   const totalOrders = myOrders.length;
   const pendingOrders = myOrders.filter(
     (o) => o.status?.toLowerCase() === "pending"
@@ -34,31 +31,28 @@ export default function AccountDashboard() {
     0
   );
 
-  const handleCancel = (id) => {
-    dispatch(cancelOrder(id));
-  };
+  const handleCancel = (id) => dispatch(cancelOrder(id));
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 px-4 md:px-8 lg:px-16 py-8 min-h-screen bg-[#f9f5f0]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-[#5C3A21]">Dashboard</h1>
+          <p className="text-[#6B4B3A] mt-1">
             Welcome back, <span className="font-medium">{user?.name}</span>
           </p>
         </div>
-
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link
             to="/products"
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 text-sm bg-[#D97A2B] text-white rounded-md hover:bg-[#e08b3a] transition"
           >
             Shop Now
           </Link>
           <Link
             to="/account/profile"
-            className="px-4 py-2 text-sm border rounded-md hover:bg-gray-50"
+            className="px-4 py-2 text-sm border border-[#D4B996] rounded-md hover:bg-[#fffaf5] transition"
           >
             Edit Profile
           </Link>
@@ -98,28 +92,30 @@ export default function AccountDashboard() {
       </div>
 
       {/* Recent Orders */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Recent Orders</h2>
+      <div className="bg-[#fffaf5] rounded-xl shadow-sm p-6">
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+          <h2 className="text-lg font-semibold text-[#5C3A21]">
+            Recent Orders
+          </h2>
           <Link
             to="/account/orders"
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-[#D97A2B] hover:underline"
           >
             View all
           </Link>
         </div>
 
         {loading ? (
-          <p className="text-gray-500">Loading orders...</p>
+          <p className="text-[#6B4B3A]">Loading orders...</p>
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : myOrders.length === 0 ? (
-          <p className="text-gray-500">No orders yet.</p>
+          <p className="text-[#6B4B3A]">No orders yet.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[500px]">
               <thead>
-                <tr className="text-left border-b text-gray-500">
+                <tr className="text-left border-b border-[#D4B996] text-[#5C3A21]">
                   <th className="pb-2">Order</th>
                   <th className="pb-2">Date</th>
                   <th className="pb-2">Status</th>
@@ -131,7 +127,7 @@ export default function AccountDashboard() {
                 {myOrders.slice(0, 5).map((order) => (
                   <tr
                     key={order._id}
-                    className="border-b last:border-none hover:bg-gray-50 transition"
+                    className="border-b border-[#D4B996] last:border-none hover:bg-[#fff4e5] transition"
                   >
                     <td className="py-3 font-medium">{order._id}</td>
                     <td>{new Date(order.createdAt).toLocaleDateString()}</td>
@@ -168,11 +164,13 @@ export default function AccountDashboard() {
 
 function StatCard({ icon, title, value }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-5 flex items-center gap-4">
-      <div className="p-3 rounded-lg bg-blue-50 text-blue-600">{icon}</div>
+    <div className="bg-[#fffaf5] rounded-xl shadow-sm p-5 flex items-center gap-4">
+      <div className="p-3 rounded-lg bg-[#D97A2B]/20 text-[#D97A2B]">
+        {icon}
+      </div>
       <div>
-        <p className="text-sm text-gray-500">{title}</p>
-        <p className="text-2xl font-bold">{value}</p>
+        <p className="text-sm text-[#6B4B3A]">{title}</p>
+        <p className="text-2xl font-bold text-[#5C3A21]">{value}</p>
       </div>
     </div>
   );
@@ -182,7 +180,7 @@ function QuickAction({ to, label }) {
   return (
     <Link
       to={to}
-      className="bg-white border rounded-lg p-4 text-center text-sm font-medium hover:bg-gray-50 transition"
+      className="bg-[#fffaf5] border border-[#D4B996] rounded-lg p-4 text-center text-sm font-medium hover:bg-[#fff4e5] transition"
     >
       {label}
     </Link>

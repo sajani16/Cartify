@@ -13,7 +13,7 @@ export default function Login() {
   const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // ✅ prevent default form submit
+    e.preventDefault();
 
     if (!email || !password) {
       toast.error("Please fill in both fields");
@@ -27,15 +27,19 @@ export default function Login() {
         email,
         password,
       });
-      console.log("Login response:", res.data);
 
       if (res.data.success) {
         localStorage.setItem("token", res.data.token);
         dispatch(loginSuccess(res.data.user));
         toast.success("Login successful");
-        navigate("/"); // ✅ navigate to home
+        if (res.data.user.role == "admin") {
+          navigate("/admin");
+        }
+        if (res.data.user.role == "user") {
+          navigate("/");
+        }
       } else {
-        toast.error(res.data.message);
+        toast.error(res.data.message || "Login failed");
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
@@ -45,12 +49,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="flex w-175 rounded-lg shadow-lg overflow-hidden">
-        {/* Left panel */}
-        <div className="w-1/2 bg-yellow-500 text-[#0B1F3A] flex flex-col justify-center items-center p-8">
-          <h2 className="text-2xl font-semibold mb-2">Welcome Back!</h2>
-          <p className="mb-6">Don't have an account?</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="flex flex-col sm:flex-row w-full max-w-4xl rounded-lg shadow-lg overflow-hidden">
+        {/* Left Panel */}
+        <div className="sm:w-1/2 bg-yellow-500 text-[#0B1F3A] flex flex-col justify-center items-center p-8">
+          <h2 className="text-3xl font-bold mb-2 text-center">Welcome Back!</h2>
+          <p className="mb-6 text-center">Don’t have an account?</p>
           <button
             onClick={() => navigate("/register")}
             className="border-2 border-[#0B1F3A] text-[#0B1F3A] px-6 py-2 rounded hover:bg-[#0B1F3A] hover:text-yellow-500 transition"
@@ -59,32 +63,34 @@ export default function Login() {
           </button>
         </div>
 
-        {/* Right panel */}
-        <div className="w-1/2 bg-white flex flex-col justify-center p-8">
-          <h2 className="text-xl font-semibold mb-6">Login</h2>
+        {/* Right Panel */}
+        <div className="sm:w-1/2 bg-white flex flex-col justify-center p-8">
+          <h2 className="text-2xl font-semibold mb-6 text-center sm:text-left">
+            Login
+          </h2>
 
-          {/* ✅ Use form to handle Enter key */}
-          <form className="flex flex-col gap-4 mb-6" onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-12 border border-gray-300 rounded px-3 focus:outline-yellow-500"
+              className="w-full h-12 border border-gray-300 rounded px-4 focus:ring-2 focus:ring-yellow-500 focus:outline-none transition"
             />
             <input
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-12 border border-gray-300 rounded px-3 focus:outline-yellow-500"
+              className="w-full h-12 border border-gray-300 rounded px-4 focus:ring-2 focus:ring-yellow-500 focus:outline-none transition"
             />
-
             <button
               type="submit"
               disabled={loading}
-              className={`w-full bg-yellow-500 text-xl py-2 rounded transition ${
-                loading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#0A1A32]"
+              className={`w-full bg-yellow-500 text-[#0B1F3A] font-semibold py-3 rounded-lg text-lg transition ${
+                loading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-[#0A1A32] hover:text-yellow-500"
               }`}
             >
               {loading ? "Logging in..." : "Login"}

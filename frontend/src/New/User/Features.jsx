@@ -1,3 +1,6 @@
+import SaleProducts from "../../Home/SaleProducts";
+import TrendingProducts from "../../Home/TrendingProducts";
+
 export default function Features() {
   return (
     <section className="bg-white py-28">

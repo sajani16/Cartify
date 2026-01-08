@@ -1,10 +1,9 @@
-// routes/cartRoutes.js
 const express = require("express");
 const router = express.Router();
 const protect = require("../middleware/authMiddleware");
 const {
-  getCart,
   addToCart,
+  getCart,
   updateCart,
   removeFromCart,
 } = require("../controllers/cartController");

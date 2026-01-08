@@ -1,70 +1,110 @@
 const { uploadImage, deleteImage } = require("../config/uploadImage");
 const Product = require("../models/product");
+const Review = require("../models/review");
 const fs = require("fs");
 
-//Add Products
+// -------------------- Add Product --------------------
 async function addProduct(req, res) {
   try {
-    const { name, price, stock, category } = req.body;
+    const {
+      name,
+      price,
+      stock,
+      category,
+      description,
+      isTrending,
+      isOnSale,
+      salePrice,
+    } = req.body;
+
     const image = req.file;
     const { role } = req.user;
-    if (!name || !price || !stock) {
-      return res.status(400).json({
-        message: "Please provide name, price, and stock",
-        success: false,
-      });
-    }
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "Product image is required",
-      });
-    }
 
     if (role !== "admin")
-      return res.json({
-        message: "Only admin can access",
+      return res
+        .status(403)
+        .json({ success: false, message: "Only admin can access" });
+
+    if (!name || !price || !stock || !category || !image)
+      return res.status(400).json({
         success: false,
+        message: "Name, price, stock, category, and image are required",
       });
+
+    // Ensure category matches enum exactly
+    const allowedCategories = [
+      "Espresso",
+      "Latte",
+      "Cappuccino",
+      "Cold Brew",
+      "Desserts",
+      "Snacks",
+      "Others",
+    ];
+    if (!allowedCategories.includes(category))
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid category" });
+
     const { secure_url, public_id } = await uploadImage(image.path);
+
     const product = await Product.create({
       name,
       price,
       stock,
       category,
+      description: description || "Product description",
       image: secure_url,
       imageId: public_id,
+      isTrending: isTrending || false,
+      isOnSale: isOnSale || false,
+      salePrice: salePrice || null,
     });
+
     fs.unlinkSync(image.path);
-    console.log(product);
-    res.status(201).json({
-      message: "Product added successfully",
-      success: true,
-      product,
-    });
+
+    res
+      .status(201)
+      .json({ success: true, message: "Product added successfully", product });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error adding product", success: false });
+    res.status(500).json({ success: false, message: "Error adding product" });
   }
 }
 
-//Get Products
+// -------------------- Get All Products --------------------
 async function getProducts(req, res) {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 3;
+    const {
+      page = 1,
+      limit = 10,
+      category,
+      isTrending,
+      isOnSale,
+      sort = "latest",
+    } = req.query;
     const skip = (page - 1) * limit;
-    const products = await Product.find({}).skip(skip).limit(limit);
-    const totalProducts = await Product.countDocuments();
 
-    if (products.length == 0)
-      return res.json({ message: "No products found", success: true });
+    const query = {};
+    if (category) query.category = category; // no lowercasing
+    if (isTrending) query.isTrending = isTrending === "true";
+    if (isOnSale) query.isOnSale = isOnSale === "true";
 
-    return res.json({
+    let productsQuery = Product.find(query).skip(skip).limit(Number(limit));
+
+    if (sort === "latest")
+      productsQuery = productsQuery.sort({ createdAt: -1 });
+    if (sort === "priceAsc") productsQuery = productsQuery.sort({ price: 1 });
+    if (sort === "priceDesc") productsQuery = productsQuery.sort({ price: -1 });
+
+    const products = await productsQuery;
+    const totalProducts = await Product.countDocuments(query);
+
+    res.json({
       success: true,
-      message: "Product fetched successfully",
+      message: "Products fetched successfully",
       products,
-      currentPage: page,
+      currentPage: Number(page),
       totalPages: Math.ceil(totalProducts / limit),
       totalProducts,
     });
@@ -76,107 +116,137 @@ async function getProducts(req, res) {
   }
 }
 
+// -------------------- Get Single Product (with Reviews) --------------------
 async function getProduct(req, res) {
   try {
     const { id } = req.params;
-    if (!id) {
-      return res.json({ message: "Id required", success: false });
-    }
     const product = await Product.findById(id);
-    if (!product) {
-      return res.json({
-        message: "No product found",
-        success: true,
-      });
-    }
+    if (!product)
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+
+    const reviews = await Review.find({ product: id })
+      .populate("user", "name")
+      .sort({ createdAt: -1 });
+
+    const ratings = reviews.map((r) => r.rating).filter(Boolean);
+    const averageRating = ratings.length
+      ? (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1)
+      : null;
+
     res.json({
-      message: "Showing product details",
       success: true,
+      message: "Product details",
       product,
+      reviews,
+      averageRating,
+      totalReviews: reviews.length,
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch product" });
+  }
 }
 
+// -------------------- Update Product --------------------
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { name, price, stock, category, description } = req.body;
+    const {
+      name,
+      price,
+      stock,
+      category,
+      description,
+      isTrending,
+      isOnSale,
+      salePrice,
+    } = req.body;
     const image = req.file;
     const { role } = req.user;
-    const product = await Product.findById(id);
-    if (!product) {
-      return res.json({
-        success: true,
-        message: "No product found",
-      });
-    }
+
     if (role !== "admin")
-      return res.json({
-        message: "Only admin can access",
-        success: false,
-      });
+      return res
+        .status(403)
+        .json({ success: false, message: "Only admin can access" });
+
+    const product = await Product.findById(id);
+    if (!product)
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+
+    if (category) {
+      const allowedCategories = [
+        "Espresso",
+        "Latte",
+        "Cappuccino",
+        "Cold Brew",
+        "Desserts",
+        "Snacks",
+        "Others",
+      ];
+      if (!allowedCategories.includes(category))
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid category" });
+      product.category = category;
+    }
+
     if (image) {
-      await deleteImage(product.imageId);
+      if (product.imageId) await deleteImage(product.imageId);
       const { secure_url, public_id } = await uploadImage(image.path);
       product.image = secure_url;
       product.imageId = public_id;
       fs.unlinkSync(image.path);
     }
-    const updateProduct = await Product.findByIdAndUpdate(
-      id,
-      {
-        name,
-        description,
-        price,
-        stock,
-        category,
-        image: product.image,
-        imageId: product.imageId,
-      },
-      { new: true }
-    );
-    console.log("object");
-    return res.json({
-      success: true,
-      message: "Updated successfully",
-      product: updateProduct,
-    });
+
+    product.name = name || product.name;
+    product.price = price || product.price;
+    product.stock = stock || product.stock;
+    product.description = description || product.description;
+    product.isTrending = isTrending ?? product.isTrending;
+    product.isOnSale = isOnSale ?? product.isOnSale;
+    product.salePrice = salePrice ?? product.salePrice;
+
+    await product.save();
+    res.json({ success: true, message: "Product updated", product });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Update failed" });
   }
 }
 
+// -------------------- Delete Product --------------------
 async function deleteProduct(req, res) {
   try {
     const { id } = req.params;
     const { role } = req.user;
-    const product = await Product.findById(id);
-    if (!product) {
-      return res.json({
-        success: true,
-        message: "No product found",
-      });
-    }
     if (role !== "admin")
-      return res.json({
-        message: "Only admin can access",
-        success: false,
-      });
-    if (product.image) {
-      await deleteImage(product.imageId);
-    }
-    const deleted = await Product.findByIdAndDelete(id);
-    return res.json({
-      success: true,
-      message: "Deleted successfully",
-      deleted,
-    });
+      return res
+        .status(403)
+        .json({ success: false, message: "Only admin can access" });
+
+    const product = await Product.findById(id);
+    if (!product)
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+
+    if (product.imageId) await deleteImage(product.imageId);
+
+    await Product.findByIdAndDelete(id);
+    res.json({ success: true, message: "Product deleted" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Delete failed" });
   }
 }
+
+// -------------------- Search Products --------------------
 async function searchProduct(req, res) {
   try {
     const {
@@ -185,33 +255,20 @@ async function searchProduct(req, res) {
       minPrice,
       maxPrice,
       page = 1,
-      limit = 2,
+      limit = 10,
     } = req.query;
-    let query = {};
+    const query = {};
 
-    //search by name
-    if (keyword) {
-      query.name = { $regex: keyword, $options: "i" };
-    }
-    //search by category
-    if (category) {
-      query.category = category;
-    }
-    //Price
+    if (keyword) query.name = { $regex: keyword, $options: "i" };
+    if (category) query.category = category; // exact match
     if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) query.price.$gte = Number(minPrice);
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
-    // Pagination
+
     const skip = (Number(page) - 1) * Number(limit);
     const products = await Product.find(query).skip(skip).limit(Number(limit));
-    if (!products) {
-      return res.json({
-        success: true,
-        message: "No related product found",
-      });
-    }
     const total = await Product.countDocuments(query);
 
     res.json({
@@ -222,8 +279,8 @@ async function searchProduct(req, res) {
       products,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Failed to fetch products", error: error });
+    console.error(error);
+    res.status(500).json({ success: false, message: "Search failed" });
   }
 }
 

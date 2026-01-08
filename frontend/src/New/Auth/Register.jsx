@@ -15,8 +15,22 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    if (!userData.name || !userData.email || !userData.password) {
+    const { name, email, password } = userData;
+
+    if (!name || !email || !password) {
       toast.error("All fields are required");
+      return;
+    }
+
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Enter a valid email address");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
@@ -42,10 +56,10 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="flex w-180 rounded-lg shadow-lg overflow-hidden">
+    <div className="min-h-screen flex flex-col sm:flex-row items-center justify-center bg-gray-100 p-4">
+      <div className="flex flex-col sm:flex-row w-full max-w-180 rounded-lg shadow-lg overflow-hidden">
         {/* Left panel */}
-        <div className="w-1/2 bg-yellow-500 text-[#0B1F3A] flex flex-col justify-center items-center p-8">
+        <div className="w-full sm:w-1/2 bg-yellow-500 text-[#0B1F3A] flex flex-col justify-center items-center p-8">
           <h2 className="text-2xl font-semibold mb-2">Welcome!</h2>
           <p className="mb-6">Already have an account?</p>
           <button
@@ -57,9 +71,9 @@ export default function Register() {
         </div>
 
         {/* Right panel */}
-        <div className="w-1/2 bg-white flex flex-col justify-center p-8">
+        <div className="w-full sm:w-1/2 bg-white flex flex-col justify-center p-8">
           <h2 className="text-xl font-semibold mb-6">Register</h2>
-          <form onSubmit={handleRegister} className="flex flex-col gap-4 mb-6">
+          <form onSubmit={handleRegister} className="flex flex-col gap-4">
             <input
               type="text"
               placeholder="Username"
@@ -68,6 +82,7 @@ export default function Register() {
                 setUserData({ ...userData, name: e.target.value })
               }
               className="w-full h-12 border border-gray-300 rounded px-3 focus:outline-yellow-500"
+              required
             />
             <input
               type="email"
@@ -77,6 +92,7 @@ export default function Register() {
                 setUserData({ ...userData, email: e.target.value })
               }
               className="w-full h-12 border border-gray-300 rounded px-3 focus:outline-yellow-500"
+              required
             />
             <input
               type="password"
@@ -86,6 +102,8 @@ export default function Register() {
                 setUserData({ ...userData, password: e.target.value })
               }
               className="w-full h-12 border border-gray-300 rounded px-3 focus:outline-yellow-500"
+              required
+              minLength={6}
             />
 
             <button

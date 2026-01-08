@@ -7,12 +7,12 @@ import Register from "./New/Auth/Register";
 import Otp from "./New/Auth/Otp";
 
 // Layouts
-import UserLayout from "./New/User/UserLayout";
+import UserLayout from "./New/Common/UserLayout";
 import AccountLayout from "./New/User/AccountLayout";
 import AdminLayout from "./New/Admin/Layout";
 
 // User Pages
-import Home from "./New/User/Home";
+import Home from "./Home/Home";
 import Products from "./New/Product/Products";
 import ProductDetail from "./New/Product/ProductDetails";
 import Cart from "./New/User/Cart";
@@ -25,6 +25,7 @@ import MyOrders from "./New/User/MyOrders";
 import AdminDashboard from "./New/Admin/AdminDashboard";
 import AdminOrders from "./New/Admin/AdminOrders";
 import AdminProducts from "./New/Admin/AdminProducts";
+import EditProduct from "./New/Admin/EditProduct";
 import Settings from "./New/Admin/Settings";
 import Customers from "./New/Admin/Customers";
 import AddProduct from "./New/Admin/AddProduct";
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="products" element={<AdminProducts />} />
           <Route path="addproduct" element={<AddProduct />} />
           <Route path="orders" element={<AdminOrders />} />
+          <Route path="editproduct/:id" element={<EditProduct />} />
           <Route path="customers" element={<Customers />} />
           <Route path="settings" element={<Settings />} />
         </Route>
@@ -55,7 +57,7 @@ export default function App() {
           {/* Main site */}
           <Route index element={<Home />} />
           <Route path="products" element={<Products />} />
-          <Route path="products/:id" element={<ProductDetail />} />
+          <Route path="product/:id" element={<ProductDetail />} />
 
           {/* Account Pages */}
           <Route path="account" element={<AccountLayout />}>

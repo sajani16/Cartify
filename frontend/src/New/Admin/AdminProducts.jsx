@@ -13,14 +13,13 @@ export default function AdminProducts() {
   const { token } = useSelector((state) => state.user);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [loadingDelete, setLoadingDelete] = useState(null); // track delete request
+  const [loadingDelete, setLoadingDelete] = useState(null);
   const limit = 5;
 
   useEffect(() => {
     dispatch(fetchProducts({ page: currentPage, limit }));
   }, [dispatch, currentPage]);
 
-  // DELETE PRODUCT
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?"))
       return;
@@ -29,9 +28,7 @@ export default function AdminProducts() {
     try {
       const res = await axios.delete(
         `http://localhost:3000/product/deleteProduct/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success(res.data.message || "Product deleted successfully");
       dispatch(fetchProducts({ page: currentPage, limit }));
@@ -43,28 +40,27 @@ export default function AdminProducts() {
     }
   };
 
-  // Change page
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6 min-h-screen bg-[#F5F0E1]">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Products</h1>
+        <h1 className="text-2xl font-semibold text-[#4B2E2B]">Products</h1>
         <button
           onClick={() => navigate("/admin/addproduct")}
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          className="bg-yellow-500 text-[#0B1F3A] px-4 py-2 rounded hover:bg-yellow-400 transition"
         >
           + Add Product
         </button>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-white rounded shadow">
+      <div className="overflow-x-auto bg-[#fff8f0] rounded shadow border border-[#D9C4A8]">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100 text-sm text-gray-600">
+          <thead className="bg-[#D9C4A8] text-[#4B2E2B] text-sm">
             <tr>
               <th className="p-3">Product</th>
               <th>Price</th>
@@ -79,7 +75,7 @@ export default function AdminProducts() {
             {data?.map((product) => (
               <tr
                 key={product._id}
-                className="border-t hover:bg-gray-50 cursor-pointer"
+                className="border-t border-[#D9C4A8] hover:bg-[#FFF3E0] cursor-pointer"
                 onClick={() => navigate(`/products/${product._id}`)}
               >
                 <td className="p-3 flex items-center gap-3">
@@ -90,14 +86,14 @@ export default function AdminProducts() {
                   />
                   <span className="font-medium">{product.name}</span>
                 </td>
-                <td>${product.price}</td>
+                <td>₹{product.price}</td>
                 <td>{product.stock}</td>
                 <td>{product.category}</td>
                 <td>
                   <span
-                    className={`px-2 py-1 rounded text-sm ${
+                    className={`px-2 py-1 rounded text-sm font-semibold ${
                       product.stock > 0
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-yellow-100 text-yellow-800"
                         : "bg-red-100 text-red-600"
                     }`}
                   >
@@ -113,7 +109,7 @@ export default function AdminProducts() {
                     onClick={() =>
                       navigate(`/admin/editproduct/${product._id}`)
                     }
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+                    className="p-2 text-[#4B2E2B] hover:bg-[#F1E0C5] rounded transition"
                   >
                     <Pencil size={18} />
                   </button>
@@ -122,7 +118,7 @@ export default function AdminProducts() {
                   <button
                     onClick={() => handleDelete(product._id)}
                     disabled={loadingDelete === product._id}
-                    className={`p-2 text-red-600 hover:bg-red-50 rounded ${
+                    className={`p-2 text-red-600 hover:bg-red-100 rounded transition ${
                       loadingDelete === product._id
                         ? "opacity-50 cursor-not-allowed"
                         : ""
@@ -142,7 +138,7 @@ export default function AdminProducts() {
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1 rounded border hover:bg-gray-200 disabled:opacity-50"
+          className="px-3 py-1 rounded border hover:bg-[#F1E0C5] disabled:opacity-50"
         >
           Prev
         </button>
@@ -153,8 +149,8 @@ export default function AdminProducts() {
             onClick={() => handlePageChange(page)}
             className={`px-3 py-1 rounded border ${
               page === currentPage
-                ? "bg-blue-600 text-white"
-                : "hover:bg-gray-200"
+                ? "bg-yellow-500 text-[#0B1F3A]"
+                : "hover:bg-[#F1E0C5]"
             }`}
           >
             {page}
@@ -164,7 +160,7 @@ export default function AdminProducts() {
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 rounded border hover:bg-gray-200 disabled:opacity-50"
+          className="px-3 py-1 rounded border hover:bg-[#F1E0C5] disabled:opacity-50"
         >
           Next
         </button>

@@ -1,156 +1,120 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchCart,
-  updateCart,
-  removeCartItem,
-} from "../../redux/slice/cartSlice";
 import { createOrder } from "../../redux/slice/orderSlice";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-// Inline Checkout component
-function Checkout({ items }) {
+export default function Checkout({ items }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading } = useSelector((state) => state.order);
+
+  const [shippingAddress, setShippingAddress] = useState({
+    fullName: "",
+    phone: "",
+    addressLine: "",
+    city: "",
+    country: "",
+  });
+
+  const [paymentMethod, setPaymentMethod] = useState("COD");
 
   const total = items.reduce(
     (sum, i) => sum + (i.product?.price || 0) * i.quantity,
     0
   );
 
+  const handleChange = (e) => {
+    setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
+  };
+
   const handleConfirmOrder = async () => {
+    if (!items.length) {
+      toast.error("Select at least one item");
+      return;
+    }
+
+    const selectedProductIds = items.map((i) => i.product._id.toString());
+
     try {
-      await dispatch(createOrder()).unwrap();
+      await dispatch(
+        createOrder({ shippingAddress, paymentMethod, selectedProductIds })
+      ).unwrap();
+
       toast.success("Order placed successfully");
-      dispatch(fetchCart());
-      navigate("/"); // clear cart
+      navigate("/");
     } catch (err) {
-      toast.error("Failed to place order");
+      toast.error(err || "Failed to place order");
     }
   };
 
   return (
-    <div className="w-1/3 bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
+    <div className="bg-[#fffaf5] rounded-xl shadow-md p-6 sticky top-4 md:top-8 w-full md:w-full lg:w-full">
+      <h2 className="text-2xl font-semibold text-[#5C3A21] mb-4 text-center md:text-left">
+        Order Summary
+      </h2>
 
-      {items.map((item, idx) => (
-        <div
-          key={`${item.product?._id}-${idx}`}
-          className="flex justify-between mb-2"
-        >
-          <div>
-            {item.product?.name} × {item.quantity}
-          </div>
-          <div>${((item.product?.price || 0) * item.quantity).toFixed(2)}</div>
-        </div>
-      ))}
-
-      <hr className="my-4" />
-
-      <div className="flex justify-between font-bold text-lg">
-        <span>Total</span>
-        <span>${total.toFixed(2)}</span>
-      </div>
-
-      <button
-        onClick={handleConfirmOrder}
-        disabled={loading}
-        className="mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-500"
-      >
-        {loading ? "Placing Order..." : "Confirm Order"}
-      </button>
-    </div>
-  );
-}
-
-export default function Cart() {
-  const dispatch = useDispatch();
-  const token = useSelector((state) => state.user.token);
-  const { items, loading, error } = useSelector((state) => state.cart);
-
-  useEffect(() => {
-    if (token) dispatch(fetchCart());
-  }, [dispatch, token]);
-
-  const handleUpdateQty = async (productId, quantity) => {
-    if (quantity < 1) return;
-    try {
-      await dispatch(updateCart({ productId, quantity })).unwrap();
-      toast.success("Cart updated");
-    } catch (err) {
-      toast.error(err.message || "Failed to update cart");
-    }
-  };
-
-  const handleRemove = async (productId) => {
-    try {
-      await dispatch(removeCartItem(productId)).unwrap();
-      toast.success("Removed from cart");
-    } catch (err) {
-      toast.error(err.message || "Failed to remove item");
-    }
-  };
-
-  if (!token)
-    return (
-      <div className="text-center mt-20">Please login to view your cart.</div>
-    );
-  if (loading) return <div className="text-center mt-20">Loading cart...</div>;
-  if (error) return <div className="text-center text-red-500">{error}</div>;
-  if (!items.length)
-    return <div className="text-center mt-20">Your cart is empty.</div>;
-
-  return (
-    <div className="min-h-screen p-8 bg-gray-50 flex gap-8">
-      {/* Cart items */}
-      <div className="flex-1 max-w-4xl bg-white shadow-md rounded-lg p-6">
-        <h1 className="text-4xl font-bold text-[#0B1F3A] mb-6 text-center">
-          Your Cart
-        </h1>
+      {/* SELECTED ITEMS */}
+      <div className="space-y-2 text-sm text-[#6B4B3A] max-h-60 overflow-y-auto mb-4">
+        {items.length === 0 && (
+          <p className="text-gray-500 text-center">No items selected</p>
+        )}
         {items.map((item) => (
           <div
             key={item.product._id}
-            className="flex items-center justify-between border-b py-4"
+            className="flex justify-between border-b border-[#D4B996] pb-2"
           >
-            <div className="flex items-center gap-4">
-              <img
-                src={item.product.image}
-                alt={item.product.name}
-                className="w-20 h-20 object-cover rounded-md"
-              />
-              <div>
-                <h3 className="font-semibold text-[#0B1F3A]">
-                  {item.product.name}
-                </h3>
-                <p className="text-gray-600">${item.product.price}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min="1"
-                value={item.quantity}
-                onChange={(e) =>
-                  handleUpdateQty(item.product._id, Number(e.target.value))
-                }
-                className="w-16 border rounded px-2 py-1"
-              />
-              <button
-                onClick={() => handleRemove(item.product._id)}
-                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-500"
-              >
-                Remove
-              </button>
-            </div>
+            <span>
+              {item.product.name} × {item.quantity}
+            </span>
+            <span>${(item.product.price * item.quantity).toFixed(2)}</span>
           </div>
         ))}
       </div>
 
-      {/* Checkout / Bill */}
-      <Checkout items={items} />
+      <div className="border-t border-[#D4B996] my-4"></div>
+
+      <div className="flex justify-between font-semibold text-lg mb-6 text-[#5C3A21]">
+        <span>Total</span>
+        <span>${total.toFixed(2)}</span>
+      </div>
+
+      {/* SHIPPING */}
+      <h3 className="font-medium text-[#5C3A21] mb-2">Shipping Details</h3>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        {Object.keys(shippingAddress).map((field) => (
+          <input
+            key={field}
+            type="text"
+            name={field}
+            placeholder={field}
+            value={shippingAddress[field]}
+            onChange={handleChange}
+            className="border border-[#D4B996] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D97A2B]"
+            required
+          />
+        ))}
+      </div>
+
+      {/* PAYMENT */}
+      <h3 className="font-medium text-[#5C3A21] mt-2 mb-2">Payment Method</h3>
+      <select
+        value={paymentMethod}
+        onChange={(e) => setPaymentMethod(e.target.value)}
+        className="border border-[#D4B996] rounded-md px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-[#D97A2B]"
+      >
+        <option value="COD">Cash on Delivery</option>
+        <option value="FakeCard">Demo Card</option>
+      </select>
+
+      <button
+        onClick={handleConfirmOrder}
+        disabled={loading}
+        className="mt-6 w-full bg-[#D97A2B] text-white py-3 rounded-lg hover:bg-[#e08b3a] transition font-semibold"
+      >
+        {loading ? "Placing Order..." : "Place Order"}
+      </button>
     </div>
   );
 }
