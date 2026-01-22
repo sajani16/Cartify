@@ -37,28 +37,27 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/otp" element={<Otp />} />
+      <Route path="/" element={<UserLayout />}>
+        {/* Main site */}
+        <Route index element={<Home />} />
+        <Route path="products" element={<Products />} />
+        <Route path="product/:id" element={<ProductDetail />} />
 
-      {/* ================= Admin Protected Routes ================= */}
-      <Route element={<ProtectedRoute admin={true} />}>
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="addproduct" element={<AddProduct />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="editproduct/:id" element={<EditProduct />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="settings" element={<Settings />} />
+        {/* ================= Admin Protected Routes ================= */}
+        <Route element={<ProtectedRoute admin={true} />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="addproduct" element={<AddProduct />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="editproduct/:id" element={<EditProduct />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
         </Route>
-      </Route>
 
-      {/* ================= User Protected Routes ================= */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/" element={<UserLayout />}>
-          {/* Main site */}
-          <Route index element={<Home />} />
-          <Route path="products" element={<Products />} />
-          <Route path="product/:id" element={<ProductDetail />} />
-
+        {/* ================= User Protected Routes ================= */}
+        <Route element={<ProtectedRoute />}>
           {/* Account Pages */}
           <Route path="account" element={<AccountLayout />}>
             <Route index element={<AccountDashboard />} />

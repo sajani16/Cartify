@@ -33,12 +33,12 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-[#FAF5F0] text-[#4B2E2B] flex flex-col sticky top-0 h-screen">
       {/* Header */}
-      <div className="p-6 text-xl font-bold border-b border-[#D9C4A8] truncate">
+      <div className="p-6 text-xl font-bold border-b border-[#D9C4A8]">
         {name || "Admin"}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      {/* Menu + Logout */}
+      <nav className="p-4 space-y-2">
         {menu.map(({ name, path, icon: Icon }) => (
           <NavLink
             key={name}
@@ -52,23 +52,21 @@ export default function Sidebar() {
             }
           >
             <Icon size={20} />
-            <span>{name}</span>
+            {name}
           </NavLink>
         ))}
-      </nav>
 
-      {/* Logout (fixed at bottom) */}
-      <div className="p-4 border-t border-[#D9C4A8]">
+        {/* Logout directly below links */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-4 py-2 rounded-lg
+          className="flex items-center gap-3 w-full px-4 py-2 mt-4 rounded-lg
                      text-[#4B2E2B] hover:bg-[#4B2E2B] hover:text-[#FAF5F0]
                      transition font-medium"
         >
           <LogOut size={20} />
           Logout
         </button>
-      </div>
+      </nav>
     </aside>
   );
 }
