@@ -4,6 +4,9 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
+// Vite environment variable
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -31,9 +34,7 @@ function EditProduct() {
 
     async function fetchProduct() {
       try {
-        const res = await axios.get(
-          `http://localhost:3000/product/getProduct/${id}`
-        );
+        const res = await axios.get(`${BASE_URL}/product/getProduct/${id}`);
         const p = res.data.product;
         setProduct({
           name: p.name,
@@ -85,14 +86,14 @@ function EditProduct() {
       if (product.image) formData.append("image", product.image);
 
       const res = await axios.put(
-        `http://localhost:3000/product/updateProduct/${id}`,
+        `${BASE_URL}/product/updateProduct/${id}`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       toast.success(res.data.message || "Product updated successfully");
@@ -110,10 +111,10 @@ function EditProduct() {
     setLoadingDelete(true);
     try {
       const res = await axios.delete(
-        `http://localhost:3000/product/deleteProduct/${id}`,
+        `${BASE_URL}/product/deleteProduct/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       toast.success(res.data.message || "Product deleted");
       navigate("/admin/products");

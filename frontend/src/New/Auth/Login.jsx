@@ -5,6 +5,9 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/slice/userSlice";
 import { toast } from "react-toastify";
 
+const BASE_URL =  import.meta.env.VITE_BASE_URL ;
+; // <-- updated API base URL
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +26,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:3000/auth/login", {
+      const res = await axios.post(`${BASE_URL}/auth/login`, {
         email,
         password,
       });

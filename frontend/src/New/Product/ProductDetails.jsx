@@ -6,6 +6,9 @@ import { addToCart as addToCartThunk } from "../../redux/slice/cartSlice";
 import { toast } from "react-toastify";
 import Reviews from "./Reviews";
 
+// Use Vite env variable
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -21,14 +24,10 @@ export default function ProductDetail() {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const res = await axios.get(
-          `http://localhost:3000/product/getProduct/${id}`
-        );
+        const res = await axios.get(`${BASE_URL}/product/getProduct/${id}`);
         setProduct(res.data.product);
 
-        const reviewRes = await axios.get(
-          `http://localhost:3000/reviews/${id}`
-        );
+        const reviewRes = await axios.get(`${BASE_URL}/reviews/${id}`);
         setReviews(reviewRes.data.reviews || []);
       } catch (err) {
         console.error(err);
@@ -45,7 +44,7 @@ export default function ProductDetail() {
 
     try {
       await dispatch(
-        addToCartThunk({ productId: product._id, quantity: Number(qty) })
+        addToCartThunk({ productId: product._id, quantity: Number(qty) }),
       ).unwrap();
       toast.success("Added to cart");
     } catch (err) {
@@ -59,7 +58,7 @@ export default function ProductDetail() {
       return;
 
     try {
-      await axios.delete(`http://localhost:3000/product/deleteProduct/${id}`, {
+      await axios.delete(`${BASE_URL}/product/deleteProduct/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Product deleted");
@@ -162,13 +161,13 @@ export default function ProductDetail() {
         </div>
       </div>
       <div className="max-w-4xl mt-10 mx-30 px-4 py-2 shadow-lg overflow-hidden ">
-       <Reviews
-        productId={product._id}
-        reviews={reviews}
-        setReviews={setReviews}
-        token={token}
-      />
-     </div>
+        <Reviews
+          productId={product._id}
+          reviews={reviews}
+          setReviews={setReviews}
+          token={token}
+        />
+      </div>
     </div>
   );
 }

@@ -3,6 +3,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
+// Vite environment variable
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 export default function Reviews({ productId, reviews, setReviews, token }) {
   const { id: userId } = useSelector((state) => state.user);
   const [comment, setComment] = useState("");
@@ -15,9 +18,9 @@ export default function Reviews({ productId, reviews, setReviews, token }) {
 
     try {
       const res = await axios.post(
-        `http://localhost:3000/reviews/${productId}`,
+        `${BASE_URL}/reviews/${productId}`,
         { comment, rating },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       setReviews((prev) => {

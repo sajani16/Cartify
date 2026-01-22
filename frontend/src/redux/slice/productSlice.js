@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
+// Define BASE_URL from Vite env
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 /* ===================== FETCH PRODUCTS (ALL / FILTER / PAGINATION) ===================== */
 export const fetchProducts = createAsyncThunk(
   "product/fetchProducts",
@@ -13,7 +16,7 @@ export const fetchProducts = createAsyncThunk(
       isOnSale,
       sort = "latest",
     },
-    thunkAPI
+    thunkAPI,
   ) => {
     try {
       const params = new URLSearchParams();
@@ -26,7 +29,7 @@ export const fetchProducts = createAsyncThunk(
       if (sort) params.append("sort", sort);
 
       const res = await fetch(
-        `http://localhost:3000/product/getProducts?${params.toString()}`
+        `${BASE_URL}/product/getProducts?${params.toString()}`,
       );
 
       if (!res.ok) throw new Error("Failed to fetch products");
@@ -36,7 +39,7 @@ export const fetchProducts = createAsyncThunk(
     } catch (err) {
       return thunkAPI.rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 /* ===================== FETCH TRENDING PRODUCTS ===================== */
@@ -45,7 +48,7 @@ export const fetchTrendingProducts = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const res = await fetch(
-        "http://localhost:3000/product/getProducts?isTrending=true&limit=8"
+        `${BASE_URL}/product/getProducts?isTrending=true&limit=8`,
       );
 
       if (!res.ok) throw new Error("Failed to fetch trending products");
@@ -55,7 +58,7 @@ export const fetchTrendingProducts = createAsyncThunk(
     } catch (err) {
       return thunkAPI.rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 /* ===================== FETCH ON SALE PRODUCTS ===================== */
@@ -64,7 +67,7 @@ export const fetchOnSaleProducts = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const res = await fetch(
-        "http://localhost:3000/product/getProducts?isOnSale=true&limit=8"
+        `${BASE_URL}/product/getProducts?isOnSale=true&limit=8`,
       );
 
       if (!res.ok) throw new Error("Failed to fetch sale products");
@@ -74,7 +77,7 @@ export const fetchOnSaleProducts = createAsyncThunk(
     } catch (err) {
       return thunkAPI.rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 /* ===================== SEARCH PRODUCTS ===================== */
@@ -82,7 +85,7 @@ export const searchProducts = createAsyncThunk(
   "product/searchProducts",
   async (
     { keyword, category, minPrice, maxPrice, page = 1, limit = 10 },
-    thunkAPI
+    thunkAPI,
   ) => {
     try {
       const params = new URLSearchParams();
@@ -95,7 +98,7 @@ export const searchProducts = createAsyncThunk(
       if (limit) params.append("limit", limit);
 
       const res = await fetch(
-        `http://localhost:3000/product/search?${params.toString()}`
+        `${BASE_URL}/product/search?${params.toString()}`,
       );
 
       if (!res.ok) throw new Error("Search failed");
@@ -104,7 +107,7 @@ export const searchProducts = createAsyncThunk(
     } catch (err) {
       return thunkAPI.rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 /* ===================== GET SINGLE PRODUCT ===================== */
@@ -112,7 +115,7 @@ export const fetchSingleProduct = createAsyncThunk(
   "product/fetchSingleProduct",
   async (id, thunkAPI) => {
     try {
-      const res = await fetch(`http://localhost:3000/product/getProduct/${id}`);
+      const res = await fetch(`${BASE_URL}/product/getProduct/${id}`);
 
       if (!res.ok) throw new Error("Failed to fetch product");
 
@@ -121,7 +124,7 @@ export const fetchSingleProduct = createAsyncThunk(
     } catch (err) {
       return thunkAPI.rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 /* ===================== SLICE ===================== */

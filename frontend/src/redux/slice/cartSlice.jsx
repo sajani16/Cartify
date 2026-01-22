@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API = "http://localhost:3000/cart";
+const API = import.meta.env.VITE_BASE_URL + "/cart";
 
 /* ================= THUNKS ================= */
 
@@ -16,10 +16,10 @@ export const fetchCart = createAsyncThunk(
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(
-        err.response?.data?.message || "Failed to fetch cart"
+        err.response?.data?.message || "Failed to fetch cart",
       );
     }
-  }
+  },
 );
 
 // Add to cart
@@ -32,15 +32,15 @@ export const addToCart = createAsyncThunk(
       const res = await axios.post(
         `${API}/addtocart`,
         { productId, quantity },
-        config
+        config,
       );
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(
-        err.response?.data?.message || "Failed to add to cart"
+        err.response?.data?.message || "Failed to add to cart",
       );
     }
-  }
+  },
 );
 
 // Update cart quantity
@@ -53,15 +53,15 @@ export const updateCart = createAsyncThunk(
       const res = await axios.put(
         `${API}/updatecart/${productId}`,
         { quantity },
-        config
+        config,
       );
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(
-        err.response?.data?.message || "Failed to update cart"
+        err.response?.data?.message || "Failed to update cart",
       );
     }
-  }
+  },
 );
 
 // Remove item from cart
@@ -73,15 +73,15 @@ export const removeCartItem = createAsyncThunk(
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const res = await axios.delete(
         `${API}/removefromcart/${productId}`,
-        config
+        config,
       );
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(
-        err.response?.data?.message || "Failed to remove item"
+        err.response?.data?.message || "Failed to remove item",
       );
     }
-  }
+  },
 );
 
 /* ================= SLICE ================= */
@@ -108,7 +108,7 @@ const cartSlice = createSlice({
         (state, action) => {
           state.loading = false;
           state.items = action.payload.cart?.products || state.items;
-        }
+        },
       )
       // Pending for all async thunks
       .addMatcher(
@@ -117,7 +117,7 @@ const cartSlice = createSlice({
         (state) => {
           state.loading = true;
           state.error = null;
-        }
+        },
       )
       // Rejected for all async thunks
       .addMatcher(
@@ -126,7 +126,7 @@ const cartSlice = createSlice({
         (state, action) => {
           state.loading = false;
           state.error = action.payload || action.error.message;
-        }
+        },
       );
   },
 });

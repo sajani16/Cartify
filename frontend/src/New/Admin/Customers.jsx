@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API = "http://localhost:3000/user";
+const API = import.meta.env.VITE_BASE_URL + "/user";
 
 export default function Customers() {
   const navigate = useNavigate();

@@ -14,6 +14,8 @@ const CATEGORIES = [
   "Others",
 ];
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 function AddProduct() {
   const { token, role } = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -81,16 +83,12 @@ function AddProduct() {
         }
       });
 
-      const res = await axios.post(
-        "http://localhost:3000/product/addProduct",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.post(`${BASE_URL}/product/addProduct`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       toast.success(res.data.message || "Product added successfully");
       navigate("/admin/products");

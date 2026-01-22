@@ -5,6 +5,8 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/slice/userSlice";
 import { toast } from "react-toastify";
 
+const BASE_URL =  import.meta.env.VITE_BASE_URL ;
+
 export default function Otp() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,7 @@ export default function Otp() {
 
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:3000/auth/verifyOtp", {
+      const res = await axios.post(`${BASE_URL}/auth/verifyOtp`, {
         email,
         otp,
       });

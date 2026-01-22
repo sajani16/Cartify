@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 export default function AdminProducts() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -21,15 +23,13 @@ export default function AdminProducts() {
   }, [dispatch, currentPage]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this product?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
 
     setLoadingDelete(id);
     try {
-      const res = await axios.delete(
-        `http://localhost:3000/product/deleteProduct/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axios.delete(`${BASE_URL}/product/deleteProduct/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       toast.success(res.data.message || "Product deleted successfully");
       dispatch(fetchProducts({ page: currentPage, limit }));
     } catch (err) {
@@ -106,9 +106,7 @@ export default function AdminProducts() {
                 >
                   {/* EDIT */}
                   <button
-                    onClick={() =>
-                      navigate(`/admin/editproduct/${product._id}`)
-                    }
+                    onClick={() => navigate(`/admin/editproduct/${product._id}`)}
                     className="p-2 text-[#4B2E2B] hover:bg-[#F1E0C5] rounded transition"
                   >
                     <Pencil size={18} />
@@ -119,9 +117,7 @@ export default function AdminProducts() {
                     onClick={() => handleDelete(product._id)}
                     disabled={loadingDelete === product._id}
                     className={`p-2 text-red-600 hover:bg-red-100 rounded transition ${
-                      loadingDelete === product._id
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
+                      loadingDelete === product._id ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
                     <Trash2 size={18} />
@@ -148,9 +144,7 @@ export default function AdminProducts() {
             key={page}
             onClick={() => handlePageChange(page)}
             className={`px-3 py-1 rounded border ${
-              page === currentPage
-                ? "bg-yellow-500 text-[#0B1F3A]"
-                : "hover:bg-[#F1E0C5]"
+              page === currentPage ? "bg-yellow-500 text-[#0B1F3A]" : "hover:bg-[#F1E0C5]"
             }`}
           >
             {page}

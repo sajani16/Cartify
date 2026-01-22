@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API = "http://localhost:3000/order";
+const API = import.meta.env.VITE_BASE_URL + "/order";
 
 /* ================= USER ================= */
 

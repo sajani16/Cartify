@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL; 
 export default function Register() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
@@ -36,10 +37,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const res = await axios.post(
-        "http://localhost:3000/auth/register",
-        userData
-      );
+      const res = await axios.post(`${BASE_URL}/auth/register`, userData);
 
       if (res.data.email) {
         localStorage.setItem("email", JSON.stringify(res.data.email));
