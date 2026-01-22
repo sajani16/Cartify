@@ -1,11 +1,9 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
-  Package,
   ShoppingCart,
   Users,
   Settings,
-  Pencil,
   Plus,
   FileText,
   LogOut,
@@ -27,12 +25,19 @@ export default function Sidebar() {
     { name: "Settings", path: "/admin/settings", icon: Settings },
   ];
 
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login", { replace: true });
+  };
+
   return (
     <aside className="w-64 bg-[#FAF5F0] text-[#4B2E2B] flex flex-col sticky top-0 h-screen">
-      <div className="p-6 text-xl font-bold border-b border-[#D9C4A8]">
-        {name}
+      {/* Header */}
+      <div className="p-6 text-xl font-bold border-b border-[#D9C4A8] truncate">
+        {name || "Admin"}
       </div>
 
+      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {menu.map(({ name, path, icon: Icon }) => (
           <NavLink
@@ -42,25 +47,28 @@ export default function Sidebar() {
               `flex items-center gap-3 px-4 py-2 rounded-lg transition ${
                 isActive
                   ? "bg-[#4B2E2B] text-[#FAF5F0] font-semibold"
-                  : "text-[#4B2E2B] hover:bg-[#E3D3C1]"
+                  : "hover:bg-[#E3D3C1]"
               }`
             }
           >
             <Icon size={20} />
-            {name}
+            <span>{name}</span>
           </NavLink>
         ))}
-
-        <button
-          onClick={() => {
-            dispatch(logout());
-            navigate("/login");
-          }}
-          className="flex items-center gap-4 p-3 mt-6 rounded hover:bg-[#4B2E2B] text-[#FAF5F0] font-medium transition w-full text-left"
-        >
-          <LogOut className="w-5 h-5" /> Logout
-        </button>
       </nav>
+
+      {/* Logout (fixed at bottom) */}
+      <div className="p-4 border-t border-[#D9C4A8]">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-4 py-2 rounded-lg
+                     text-[#4B2E2B] hover:bg-[#4B2E2B] hover:text-[#FAF5F0]
+                     transition font-medium"
+        >
+          <LogOut size={20} />
+          Logout
+        </button>
+      </div>
     </aside>
   );
 }
